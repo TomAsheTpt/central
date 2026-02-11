@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central - Favela Brass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #3E0B59 0%, #5A0E7A 100%);
+            min-height: 100vh;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        a {
+            color: #FEF100;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #FEF100, #62CC3C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #FEF100;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 28px 0 12px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Quick actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            text-decoration: none !important;
+            color: #fff;
+            transition: all 0.2s;
+            min-height: 90px;
+        }
+
+        .quick-action:hover {
+            background: rgba(255,255,255,0.14);
+            border-color: #FEF100;
+            transform: translateY(-1px);
+        }
+
+        .quick-action-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .quick-action-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Slack commands */
+        .slack-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 18px;
+            overflow: hidden;
+        }
+
+        .cmd-group {
+            margin-bottom: 16px;
+        }
+        .cmd-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .cmd-group-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #62CC3C;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .cmd-row {
+            display: flex;
+            gap: 10px;
+            padding: 4px 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .cmd-code {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+            color: #FEF100;
+            white-space: nowrap;
+            min-width: 0;
+            flex-shrink: 0;
+        }
+
+        .cmd-desc {
+            color: rgba(255,255,255,0.55);
+            min-width: 0;
+        }
+
+        .slack-link {
+            display: block;
+            text-align: center;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 13px;
+        }
+
+        /* Site cards */
+        .site-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .site-card {
+            display: block;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            text-decoration: none !important;
+            color: #fff;
+            transition: all 0.2s;
+        }
+
+        .site-card:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #FEF100;
+            transform: translateY(-1px);
+        }
+
+        .site-card-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .site-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .site-card-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.4;
+        }
+
+        .lock-badge {
+            font-size: 10px;
+            opacity: 0.5;
+        }
+
+        .password-note {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .footer-help {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+        }
+
+        .footer-timestamp {
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 420px) {
+            .quick-actions {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px;
+            }
+            .quick-action {
+                padding: 14px 6px;
+                min-height: 80px;
+            }
+            .quick-action-icon {
+                font-size: 24px;
+            }
+            .quick-action-label {
+                font-size: 12px;
+            }
+            .site-grid {
+                grid-template-columns: 1fr;
+            }
+            .cmd-row {
+                flex-direction: column;
+                gap: 2px;
+            }
+            .stats-bar {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="data:image/png;base64,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" alt="Favela Brass" class="header-logo">
+        <div class="header-title">Central Favela Brass</div>
+        <div class="header-subtitle">Tudo num lugar so</div>
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-number">73</div>
+                <div class="stat-label">Alunos ativos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">14</div>
+                <div class="stat-label">Professores</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">37</div>
+                <div class="stat-label">Eventos futuros</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="section-title">Acoes rapidas</div>
+
+        <div class="quick-actions">
+            <a href="https://roteiro.favelabrass.org" class="quick-action" target="_blank">
+                <span class="quick-action-icon">&#128197;</span>
+                <span class="quick-action-label">Horarios</span>
+            </a>
+            <a href="https://roteiro.favelabrass.org#aluno" class="quick-action" target="_blank">
+                <span class="quick-action-icon">&#128269;</span>
+                <span class="quick-action-label">Buscar Aluno</span>
+            </a>
+            <a href="https://presencas.favelabrass.org" class="quick-action" target="_blank">
+                <span class="quick-action-icon">&#9989;</span>
+                <span class="quick-action-label">Presencas</span>
+            </a>
+        </div>
+
+        <div class="section-title">Comandos do Slack</div>
+
+        <div class="slack-card">
+            <div class="cmd-group">
+                <div class="cmd-group-title">Consultar</div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/aluno 139</span>
+                    <span class="cmd-desc">Dados de um aluno (ID ou nome)</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/banda preta</span>
+                    <span class="cmd-desc">Lista da banda</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/horario joana</span>
+                    <span class="cmd-desc">Horario de um professor</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/instrumento IN087</span>
+                    <span class="cmd-desc">Checar instrumento</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/pergunta ...</span>
+                    <span class="cmd-desc">Perguntar qualquer coisa</span>
+                </div>
+            </div>
+
+            <div class="cmd-group">
+                <div class="cmd-group-title">Presenca</div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/presenca-aula</span>
+                    <span class="cmd-desc">Suas aulas particulares</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/presenca banda preta</span>
+                    <span class="cmd-desc">Ensaio de banda</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/presenca-teoria n2</span>
+                    <span class="cmd-desc">Aula de teoria</span>
+                </div>
+            </div>
+
+            <div class="cmd-group">
+                <div class="cmd-group-title">Atualizar</div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/cancelar</span>
+                    <span class="cmd-desc">Cancelar aula ou ensaio</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/reagendar</span>
+                    <span class="cmd-desc">Reagendar atividade</span>
+                </div>
+            </div>
+
+            <div class="cmd-group">
+                <div class="cmd-group-title">Admin</div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/folha</span>
+                    <span class="cmd-desc">Folha de pagamento</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/lanches</span>
+                    <span class="cmd-desc">Lanches da semana</span>
+                </div>
+                <div class="cmd-row">
+                    <span class="cmd-code">/faltas</span>
+                    <span class="cmd-desc">Faltas nao-classificadas</span>
+                </div>
+            </div>
+
+            <div class="slack-link">
+                <a href="https://slack.favelabrass.org" target="_blank">Ver guia completo do Slack &rarr;</a>
+            </div>
+        </div>
+
+        <div class="section-title">Sites da equipe</div>
+
+        <div class="site-grid">
+            <a href="https://roteiro.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#128197;</div>
+                <div class="site-card-name">Horarios</div>
+                <div class="site-card-desc">Aulas e ensaios por dia, local, professor ou aluno</div>
+            </a>
+            <a href="https://presencas.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#128203;</div>
+                <div class="site-card-name">Presencas <span class="lock-badge">&#128274;</span></div>
+                <div class="site-card-desc">Frequencia, alertas e relatorios mensais</div>
+            </a>
+            <a href="https://planejamento.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#127919;</div>
+                <div class="site-card-name">Planejamento <span class="lock-badge">&#128274;</span></div>
+                <div class="site-card-desc">V/TO, FOFA, Pedras e Indicadores</div>
+            </a>
+            <a href="https://lojinha.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#128085;</div>
+                <div class="site-card-name">Lojinha <span class="lock-badge">&#128274;</span></div>
+                <div class="site-card-desc">Estoque e vendas de merchandising</div>
+            </a>
+            <a href="https://financas.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#128176;</div>
+                <div class="site-card-name">Financas <span class="lock-badge">&#128274;</span></div>
+                <div class="site-card-desc">Receitas, despesas e contas</div>
+            </a>
+            <a href="https://agenda.favelabrass.org" class="site-card" target="_blank">
+                <div class="site-card-icon">&#128198;</div>
+                <div class="site-card-name">Agenda</div>
+                <div class="site-card-desc">Calendario de eventos</div>
+            </a>
+        </div>
+
+        <div class="password-note">&#128274; Sites com cadeado usam senha: <strong>amigosdacacilda</strong></div>
+
+        <div class="footer">
+            <div class="footer-help">Duvidas? Pergunte no <strong>#geral</strong> do Slack ou use <strong>/pergunta</strong></div>
+            <div class="footer-timestamp">Atualizado em 11/02/2026 10:28</div>
+        </div>
+
+    </div>
+
+</body>
+</html>
