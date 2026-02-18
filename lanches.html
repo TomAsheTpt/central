@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lanches | Favela Brass</title>
+    <link rel="stylesheet" href="shared/fb-common.css">
+    <link rel="stylesheet" href="shared/fb-dark.css">
+    <style>
+        /* -- Stat cards -- */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px 14px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--yellow);
+            line-height: 1.1;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* -- Week navigator -- */
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .week-nav button {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .week-nav button:hover { background: rgba(255,255,255,0.15); }
+        .week-nav .week-label {
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* -- Day card -- */
+        .day-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+        .day-card.cancelled {
+            opacity: 0.4;
+        }
+        .day-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .day-card-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .day-card-title .day-name {
+            color: var(--yellow);
+            margin-right: 6px;
+        }
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-badge.planned { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+        .status-badge.confirmed { background: rgba(46,204,113,0.15); color: var(--green); }
+        .status-badge.delivered { background: rgba(46,204,113,0.25); color: var(--green); }
+        .status-badge.cancelled { background: rgba(231,76,60,0.15); color: var(--red); }
+
+        /* -- Entry rows within day card -- */
+        .entry-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .entry-name { font-weight: 500; }
+        .entry-count {
+            text-align: center;
+            min-width: 50px;
+        }
+        .entry-count .count-val {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--green);
+        }
+        .entry-count .count-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        /* -- Day totals bar -- */
+        .day-totals {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .day-total-kit {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--yellow);
+        }
+        .day-total-kit .kit-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* -- Action buttons -- */
+        .day-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-confirm {
+            background: var(--green);
+            color: var(--purple-dark);
+        }
+        .btn-deliver {
+            background: var(--yellow);
+            color: var(--purple-dark);
+        }
+        .btn-cancel {
+            background: rgba(231,76,60,0.2);
+            color: var(--red);
+        }
+        .btn-extra {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* -- Inline edit fields -- */
+        .edit-field {
+            width: 60px;
+            padding: 6px 8px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .edit-field:focus {
+            outline: none;
+            border-color: var(--yellow);
+        }
+
+        /* -- History table -- */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .history-table th {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 8px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .history-table th:first-child,
+        .history-table th:nth-child(2) { text-align: left; }
+        .history-table td {
+            padding: 10px 8px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+        }
+        .history-table td:first-child,
+        .history-table td:nth-child(2) { text-align: left; }
+        .history-table tfoot td {
+            font-weight: 700;
+            border-top: 2px solid rgba(255,255,255,0.15);
+        }
+
+        /* -- Month selector -- */
+        .month-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .month-selector select {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        /* -- Invoice cards -- */
+        .invoice-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .invoice-period {
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .invoice-totals {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+        .invoice-totals strong {
+            color: var(--green);
+        }
+        .invoice-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .invoice-fields label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .invoice-fields input, .invoice-fields select {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        .invoice-status {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .invoice-status label {
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* -- Config sections -- */
+        .config-section {
+            margin-bottom: 32px;
+        }
+        .config-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .defaults-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .defaults-table th {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .defaults-table th:first-child { text-align: left; }
+        .defaults-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .defaults-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+        .defaults-table input {
+            width: 50px;
+            padding: 6px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            text-align: center;
+        }
+        .defaults-table input:focus {
+            outline: none;
+            border-color: var(--yellow);
+        }
+        .defaults-table .notes-input {
+            width: 160px;
+            text-align: left;
+        }
+
+        /* -- Toggle switch -- */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle .slider {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.25s;
+        }
+        .toggle .slider::before {
+            content: '';
+            position: absolute;
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s;
+        }
+        .toggle input:checked + .slider { background: var(--green); }
+        .toggle input:checked + .slider::before { transform: translateX(20px); }
+
+        /* Config row */
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .config-row:hover { background: rgba(255,255,255,0.07); }
+        .cr-name { flex: 1; font-weight: 500; }
+        .cr-detail { font-size: 12px; color: rgba(255,255,255,0.4); }
+        .cr-hc { font-size: 13px; color: var(--green); min-width: 30px; text-align: right; }
+
+        /* Cost config */
+        .cost-config {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .cost-config label { font-size: 14px; font-weight: 500; }
+        .cost-input {
+            width: 100px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: right;
+        }
+        .cost-input:focus { outline: none; border-color: var(--yellow); }
+
+        /* -- Info note -- */
+        .info-note {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-top: 20px;
+        }
+        .info-note a { color: var(--yellow); text-decoration: none; }
+
+        /* -- Toast -- */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--green);
+            color: var(--purple-dark);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* -- Loading spinner -- */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.4);
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 24px; height: 24px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--yellow);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .stat-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .entry-row { grid-template-columns: 1fr auto; }
+            .entry-count { min-width: 40px; }
+            .invoice-fields { grid-template-columns: 1fr; }
+            .defaults-table .notes-input { width: 100px; }
+        }
+    </style>
+</head>
+<body>
+<nav class="fb-nav">
+    <a href="index.html">Home</a>
+    <a href="horarios.html">Hor&aacute;rios</a>
+    <a href="presencas.html">Presen&ccedil;as</a>
+    <a href="agenda.html">Agenda</a>
+    <a href="planejamento.html">Planejamento</a>
+    <a href="lojinha.html">Lojinha</a>
+    <a href="lanches.html">Lanches</a>
+    <a href="financas/">Finan&ccedil;as</a>
+    <a href="captacao/">Capta&ccedil;&atilde;o</a>
+    <a href="repertorio/">Repert&oacute;rio</a>
+    <a href="eventos/">Eventos</a>
+</nav>
+
+<header class="fb-header">
+    <div class="fb-header-text">
+        <div class="fb-header-title">Lanches</div>
+        <div class="fb-header-subtitle">Controle de lanches &bull; Atualizado 18/02/2026 12:25</div>
+    </div>
+</header>
+
+<div class="fb-tabs">
+    <button class="fb-tab-btn active" data-tab="pedido">Pedido</button>
+    <button class="fb-tab-btn" data-tab="historico">Hist&oacute;rico</button>
+    <button class="fb-tab-btn" data-tab="nfse">Notas Fiscais</button>
+    <button class="fb-tab-btn" data-tab="config">Configura&ccedil;&atilde;o</button>
+</div>
+
+<!-- == Pedido (loaded dynamically) == -->
+<div id="tab-pedido" class="fb-tab-panel active">
+    <div class="stat-row">
+        <div class="stat-card"><div class="stat-value" id="stat-sessions">-</div><div class="stat-label">Sess&otilde;es</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-planned">-</div><div class="stat-label">Planejado</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-confirmed">-</div><div class="stat-label">Confirmado</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-cost">-</div><div class="stat-label">Custo</div></div>
+    </div>
+    <div class="week-nav">
+        <button onclick="LanchesApp.prevWeek()">&larr;</button>
+        <div class="week-label" id="week-label">Carregando...</div>
+        <button onclick="LanchesApp.nextWeek()">&rarr;</button>
+    </div>
+    <div id="pedido-content"><div class="loading">Carregando</div></div>
+</div>
+
+<!-- == Historico (loaded dynamically) == -->
+<div id="tab-historico" class="fb-tab-panel">
+    <div class="month-selector">
+        <button onclick="LanchesApp.prevMonth()">&larr;</button>
+        <select id="history-month" onchange="LanchesApp.loadHistory()"></select>
+        <button onclick="LanchesApp.nextMonth()">&rarr;</button>
+    </div>
+    <div id="history-content"><div class="loading">Carregando</div></div>
+</div>
+
+<!-- == Notas Fiscais (loaded dynamically) == -->
+<div id="tab-nfse" class="fb-tab-panel">
+    <div class="month-selector">
+        <select id="nfse-year" onchange="LanchesApp.loadInvoices()">
+            <option value="2026" selected>2026</option>
+        </select>
+    </div>
+    <div id="nfse-content"><div class="loading">Carregando</div></div>
+</div>
+
+<!-- == Configuracao (static + dynamic) == -->
+<div id="tab-config" class="fb-tab-panel">
+<div class="config-section">
+    <h3>Custo por lanche</h3>
+    <div class="cost-config">
+        <label>Valor unit&aacute;rio:</label>
+        <span style="color:rgba(255,255,255,0.5)">R$</span>
+        <input type="number" class="cost-input" id="costInput" value="10.00" step="0.50" min="0">
+        <button class="btn btn-confirm" onclick="LanchesApp.saveCostPerHead()">Salvar</button>
+    </div>
+</div>
+<div class="config-section">
+<h3>Padr&otilde;es por dia da semana</h3>
+<table class="defaults-table">
+<thead><tr><th>Dia</th><th>Profs</th><th>Veganos</th><th>Produ&ccedil;&atilde;o</th><th>Obs</th></tr></thead>
+<tbody>
+<tr data-day="2a - Segunda"><td>Seg</td><td><input type="number" class="dd-staff" value="3" min="0"></td><td><input type="number" class="dd-vegan" value="1" min="0"></td><td><input type="number" class="dd-prod" value="1" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Wesley + 2 outros"></td></tr>
+<tr data-day="3a - Terça"><td>Ter</td><td><input type="number" class="dd-staff" value="4" min="0"></td><td><input type="number" class="dd-vegan" value="1" min="0"></td><td><input type="number" class="dd-prod" value="1" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Teoria: Joana, Pablo + 2"></td></tr>
+<tr data-day="4a - Quarta"><td>Qua</td><td><input type="number" class="dd-staff" value="6" min="0"></td><td><input type="number" class="dd-vegan" value="1" min="0"></td><td><input type="number" class="dd-prod" value="1" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Wesley, Henri + 4 outros"></td></tr>
+<tr data-day="5a - Quinta"><td>Qui</td><td><input type="number" class="dd-staff" value="2" min="0"></td><td><input type="number" class="dd-vegan" value="0" min="0"></td><td><input type="number" class="dd-prod" value="1" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Shanso + 1"></td></tr>
+<tr data-day="6a - Sexta"><td>Sex</td><td><input type="number" class="dd-staff" value="3" min="0"></td><td><input type="number" class="dd-vegan" value="1" min="0"></td><td><input type="number" class="dd-prod" value="1" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Wesley + 2"></td></tr>
+<tr data-day="Sábado"><td>Sáb</td><td><input type="number" class="dd-staff" value="0" min="0"></td><td><input type="number" class="dd-vegan" value="0" min="0"></td><td><input type="number" class="dd-prod" value="0" min="0"></td><td><input type="text" class="notes-input dd-notes" value="Curvelo - sem lanche prof"></td></tr>
+</tbody></table>
+<button class="btn btn-confirm" onclick="LanchesApp.saveDefaults()">Salvar Padr&otilde;es</button>
+</div>
+<div class="config-section">
+<h3>Atividades com lanche</h3>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ76" checked onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio da Banda 1 Preta</span>
+    <span class="cr-detail">Segunda 18:30 &bull; 2.5h</span>
+    <span class="cr-hc">21</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ85" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Aula técnica percussão Banda 1 Preta</span>
+    <span class="cr-detail">Segunda 18:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ79" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria 3A</span>
+    <span class="cr-detail">Terça 19:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ81" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria 1</span>
+    <span class="cr-detail">Terça 19:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ80" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria 2</span>
+    <span class="cr-detail">Terça 20:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ82" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria 3B</span>
+    <span class="cr-detail">Terça 20:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ73" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio de percussão Banda 2 roxa</span>
+    <span class="cr-detail">Quarta 18:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ74" checked onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio da Banda 2 roxa</span>
+    <span class="cr-detail">Quarta 18:30 &bull; 2.5h</span>
+    <span class="cr-hc">17</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ134" checked onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio Banda 3 (verde)</span>
+    <span class="cr-detail">Quinta 18:30 &bull; 2.5h</span>
+    <span class="cr-hc">10</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ144" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio percussão Banda Preta</span>
+    <span class="cr-detail">Quinta 18:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ145" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio Percussão Banda Verde</span>
+    <span class="cr-detail">Quinta 18:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ84" checked onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio extra da Banda 1 (Preta)</span>
+    <span class="cr-detail">Sexta 18:30 &bull; 2.5h</span>
+    <span class="cr-hc">21</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ121" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria Curvelo 2</span>
+    <span class="cr-detail">Sábado 08:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ122" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Teoria Curvelo 1</span>
+    <span class="cr-detail">Sábado 10:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ129" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Flauta Doce</span>
+    <span class="cr-detail">Sábado 10:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ135" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Flauta Doce</span>
+    <span class="cr-detail">Sábado 10:30 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ30" onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio de percussão Banda Amarela</span>
+    <span class="cr-detail">Sábado 11:00 &bull; 1.0h</span>
+    <span class="cr-hc">—</span>
+</div>
+<div class="config-row">
+    <label class="toggle">
+        <input type="checkbox" data-id="ativ75" checked onchange="LanchesApp.toggleActivity(this)">
+        <span class="slider"></span>
+    </label>
+    <span class="cr-name">Ensaio da Banda Amarela</span>
+    <span class="cr-detail">Sábado 11:00 &bull; 1.5h</span>
+    <span class="cr-hc">18</span>
+</div>
+</div>
+<div class="info-note">
+    Ensaios avulsos s&atilde;o adicionados na <a href="agenda.html">Agenda</a> com a op&ccedil;&atilde;o "Precisa de lanche" marcada.
+    Eles aparecem automaticamente no pedido de lanches.
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer class="fb-footer">
+    Favela Brass &bull; Gerado em 18/02/2026 12:25
+</footer>
+
+<script src="shared/fb-common.js"></script>
+<script src="shared/lanches.js"></script>
+</body>
+</html>
